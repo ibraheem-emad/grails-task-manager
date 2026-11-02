@@ -29,4 +29,4 @@ Grails 7, Groovy, GORM, MySQL, GSP, Bootstrap 5, Spring Security, Postman.
 
 ## ER Diagram
 
-![ER diagram](docs/er-diagram.png)
+![ER diagram](docs/ER_diagram.png)
