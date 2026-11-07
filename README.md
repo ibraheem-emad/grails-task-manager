@@ -1,4 +1,4 @@
-## Task Manager
+# Task Manager
 
 Final project for the UBS Software Developer Intern Training Plan, built with Grails 7.
 
