@@ -12,11 +12,18 @@ class TaskService {
 
     @Transactional(readOnly = true)
     List<Task> list(Map params) {
+        if(params.search) {
+            return Task.findAllByTitleIlike("%${params.search}%", params)
+        }
         Task.list(params)
     }
 
+
     @Transactional(readOnly = true)
-    Long count() {
+    Long count(Map params = [:]) {
+        if (params.search) {
+            return Task.countByTitleIlike("%${params.search}%")
+        }
         Task.count()
     }
 
