@@ -4,6 +4,7 @@ import grails.gorm.transactions.Transactional
 import grails.validation.ValidationException
 import java.time.LocalDate
 import java.time.ZoneId
+import grails.gorm.DetachedCriteria
 
 @Transactional
 class TaskService {
@@ -15,19 +16,12 @@ class TaskService {
 
     @Transactional(readOnly = true)
     List<Task> list(Map params) {
-        if(params.search) {
-            return Task.findAllByTitleIlike("%${params.search}%", params)
-        }
-        Task.list(params)
+        filtered(params).list(max: params.max, offset: params.offset, sort: 'deadline', order: 'asc')
     }
-
 
     @Transactional(readOnly = true)
     Long count(Map params = [:]) {
-        if (params.search) {
-            return Task.countByTitleIlike("%${params.search}%")
-        }
-        Task.count()
+        filtered(params).count()
     }
 
     @Transactional(readOnly = true)
@@ -72,4 +66,19 @@ class TaskService {
     private static Date startOfToday() {
         Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
+
+    private DetachedCriteria<Task> filtered(Map params) {
+    DetachedCriteria<Task> query = new DetachedCriteria(Task)
+
+    if (params.search) {
+        String pattern = "%${params.search}%".toString()
+        query = query.where { title =~ pattern }
+    }
+
+    TaskStatus wanted = TaskStatus.values().find { it.name() == params.status }
+    if (wanted) {
+        query = query.where { status == wanted }
+    }
+    query
+}
 }

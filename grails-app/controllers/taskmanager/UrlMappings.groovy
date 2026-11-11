@@ -9,6 +9,7 @@ class UrlMappings {
             }
         }
 
+        "/api/tasks"(resources: 'taskRest', excludes: ['create', 'edit'])
         "/"(controller: 'dashboard')
         "500"(view:'/error')
         "404"(view:'/notFound')
