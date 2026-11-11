@@ -12,7 +12,10 @@ class TaskController {
 
     def index(Integer max) { 
         params.max = Math.min(max ?: 10, 100)
-        [taskList: taskService.list(params), taskCount: taskService.count()]
+        [taskList    : taskService.list(params),
+         taskCount   : taskService.count(params),
+         statusCounts: taskService.countByStatus(),
+         overdueCount: taskService.countOverdue()]
     }
     def show(Long id) {
         Task task = taskService.get(id)

@@ -1,6 +1,9 @@
 package taskmanager
 
 import grails.gorm.transactions.Transactional
+import grails.validation.ValidationException
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Transactional
 class TaskService {
@@ -33,6 +36,15 @@ class TaskService {
     }
 
     Task save(Task task) {
+        task.validate()
+
+        if (task.id == null && task.deadline && task.deadline.before(startOfToday())) {
+            task.errors.rejectValue('deadline', 'task.deadline.past', "The deadline can't be in the past.")
+        }
+
+        if (task.hasErrors()) {
+            throw new ValidationException('Task is not valid', task.errors)
+        }
         task.save(failOnError: true)
     }
 
@@ -42,5 +54,22 @@ class TaskService {
             throw new IllegalArgumentException("Task ${id} not found.")
         }
         task.delete()
+    }
+
+    @Transactional(readOnly = true)
+    Map<TaskStatus, Long> countByStatus() {
+        Map<TaskStatus, Long> counts = TaskStatus.values().collectEntries { [(it): 0L] }
+        Task.executeQuery('select t.status, count(t) from Task t group by t.status').each { row ->
+        counts[row[0]] = row[1]}
+        counts
+    }
+
+    @Transactional(readOnly = true)
+    Long countOverdue() {
+        Task.countByDeadlineLessThanAndStatusNotEqual(startOfToday(), TaskStatus.DONE)
+    }
+
+    private static Date startOfToday() {
+        Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
 }
