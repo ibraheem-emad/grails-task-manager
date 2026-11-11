@@ -4,6 +4,7 @@
 grails.plugin.springsecurity.userLookup.userDomainClassName = 'taskmanager.User'
 grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'taskmanager.UserRole'
 grails.plugin.springsecurity.authority.className = 'taskmanager.Role'
+grails.plugin.springsecurity.successHandler.alwaysUseDefault = true
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	[pattern: '/',               access: ['permitAll']],
 	[pattern: '/error',          access: ['permitAll']],
