@@ -10,21 +10,22 @@ class TaskController {
 
     static allowedMethods = [save: 'POST', update: 'PUT', delete: 'DELETE']
 
-    def index(Integer max) { 
+    def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        [taskList    : taskService.list(params),
-         taskCount   : taskService.count(params),
-         statusCounts: taskService.countByStatus(),
-         overdueCount: taskService.countOverdue()]
+        def taskList = taskService.list(params)
+        [taskList: taskList, taskCount: taskList.totalCount, statusCounts: taskService.countByStatus(), overdueCount: taskService.countOverdue()]
     }
+
     def show(Long id) {
         Task task = taskService.get(id)
         if (!task) { notFound(); return }
         [task: task]
     }
+
     def create() {
         [task: new Task(params), users: taskService.listUsers()]
     }
+
     def save() {
         Task task = new Task(params)
         try {
@@ -36,11 +37,13 @@ class TaskController {
         flash.message = "Task '${task.title}' created."
         redirect action: 'show', id: task.id
     }
+
     def edit(Long id) {
         Task task = taskService.get(id)
         if (!task) { notFound(); return }
         [task: task, users: taskService.listUsers()]
     }
+
     def update(Long id) {
         Task task = taskService.get(id)
         if (!task) { notFound(); return }
@@ -54,6 +57,7 @@ class TaskController {
         flash.message = "Task '${task.title}' updated."
         redirect action: 'show', id: task.id
     }
+    
     def delete(Long id) {
         try {
             taskService.delete(id)

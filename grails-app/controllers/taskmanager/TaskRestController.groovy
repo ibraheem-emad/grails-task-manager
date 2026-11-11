@@ -9,7 +9,7 @@ class TaskRestController {
 
     TaskService taskService
 
-    private static final List<String> FIELDS = ['title', 'description', 'deadline', 'status', 'assignedTo']
+    static responseFormats = ['json']
 
     def index(Integer max) {
         int pageSize = Math.min(max ?: 10, 100)
@@ -17,43 +17,40 @@ class TaskRestController {
         params.max = pageSize
         params.offset = offset
 
-        renderJson([
-            total: taskService.count(params),
-            page : offset.intdiv(pageSize) + 1,
-            max  : pageSize,
-            data : taskService.list(params).collect { toMap(it) }
-        ])
+        def tasks = taskService.list(params)
+        def result = [total: tasks.totalCount, page: offset.intdiv(pageSize) + 1, max: pageSize, data: tasks.collect { toMap(it) }]
+        render result as JSON
     }
 
     def show(Long id) {
         Task task = taskService.get(id)
         if (!task) { notFound(id); return }
-        renderJson(toMap(task))
+        render toMap(task) as JSON   
     }
 
     def save() {
-        Task task = new Task()
-        bindData(task, request.JSON, [include: FIELDS])
+        Task task = new Task(request.JSON)
         try {
             taskService.save(task)
         } catch (ValidationException e) {
-            validationFailed(task)
+            respond task.errors
             return
         }
-        renderJson(toMap(task), 201)
+        response.status = 201
+        render toMap(task) as JSON
     }
 
     def update(Long id) {
         Task task = taskService.get(id)
         if (!task) { notFound(id); return }
-        bindData(task, request.JSON, [include: FIELDS])
+        task.properties = request.JSON
         try {
             taskService.save(task)
         } catch (ValidationException e) {
-            validationFailed(task)
+            respond task.errors
             return
         }
-        renderJson(toMap(task))
+        render toMap(task) as JSON
     }
 
     def delete(Long id) {
@@ -67,28 +64,14 @@ class TaskRestController {
     }
 
     private Map toMap(Task t) {
-        [id         : t.id,
-         title      : t.title,
-         description: t.description,
-         deadline   : g.formatDate(date: t.deadline, format: 'yyyy-MM-dd'),
-         status     : t.status.name(),
-         assignedTo : [id: t.assignedTo.id, username: t.assignedTo.username],
-         dateCreated: t.dateCreated,
-         lastUpdated: t.lastUpdated]
-    }
-
-    private void renderJson(Object body, int status = 200) {
-        response.status = status
-        render body as JSON
+        [id: t.id, title: t.title, description: t.description,
+        deadline: g.formatDate(date: t.deadline, format: 'yyyy-MM-dd'),
+        status: t.status.name(),
+        assignedTo: [id: t.assignedTo.id, username: t.assignedTo.username],
+        dateCreated: t.dateCreated, lastUpdated: t.lastUpdated]
     }
 
     private void notFound(Long id) {
-        renderJson([error: "Task ${id} not found.".toString()], 404)
-    }
-
-    private void validationFailed(Task task) {
-        renderJson([errors: task.errors.fieldErrors.collect {
-            [field: it.field, message: message(error: it)]
-        }], 422)
+        render(status: 404, contentType: 'application/json', text: ([error: "Task ${id} not found."] as JSON).toString())
     }
 }

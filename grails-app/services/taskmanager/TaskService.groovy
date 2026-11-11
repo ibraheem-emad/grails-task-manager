@@ -4,7 +4,6 @@ import grails.gorm.transactions.Transactional
 import grails.validation.ValidationException
 import java.time.LocalDate
 import java.time.ZoneId
-import grails.gorm.DetachedCriteria
 
 @Transactional
 class TaskService {
@@ -16,12 +15,17 @@ class TaskService {
 
     @Transactional(readOnly = true)
     List<Task> list(Map params) {
-        filtered(params).list(max: params.max, offset: params.offset, sort: 'deadline', order: 'asc')
-    }
+        TaskStatus status = TaskStatus.values().find { it.name() == params.status }
 
-    @Transactional(readOnly = true)
-    Long count(Map params = [:]) {
-        filtered(params).count()
+        Task.createCriteria().list(max: params.max, offset: params.offset) {
+            if (params.search) {
+                ilike('title', "%${params.search}%".toString())
+            }
+            if (status) {
+                eq('status', status)
+            }
+            order('deadline')
+        }
     }
 
     @Transactional(readOnly = true)
@@ -52,10 +56,11 @@ class TaskService {
 
     @Transactional(readOnly = true)
     Map<TaskStatus, Long> countByStatus() {
-        Map<TaskStatus, Long> counts = TaskStatus.values().collectEntries { [(it): 0L] }
-        Task.executeQuery('select t.status, count(t) from Task t group by t.status').each { row ->
-        counts[row[0]] = row[1]}
-        counts
+        Map<TaskStatus, Long> counts = [:]
+        TaskStatus.values().each { s ->
+            counts[s] = Task.countByStatus(s)
+        }
+        return counts
     }
 
     @Transactional(readOnly = true)
@@ -66,19 +71,4 @@ class TaskService {
     private static Date startOfToday() {
         Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
-
-    private DetachedCriteria<Task> filtered(Map params) {
-    DetachedCriteria<Task> query = new DetachedCriteria(Task)
-
-    if (params.search) {
-        String pattern = "%${params.search}%".toString()
-        query = query.where { title =~ pattern }
-    }
-
-    TaskStatus wanted = TaskStatus.values().find { it.name() == params.status }
-    if (wanted) {
-        query = query.where { status == wanted }
-    }
-    query
-}
 }
