@@ -5,6 +5,8 @@ grails.plugin.springsecurity.userLookup.userDomainClassName = 'taskmanager.User'
 grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'taskmanager.UserRole'
 grails.plugin.springsecurity.authority.className = 'taskmanager.Role'
 grails.plugin.springsecurity.successHandler.alwaysUseDefault = true
+grails.plugin.springsecurity.useBasicAuth = true
+grails.plugin.springsecurity.basic.realmName = 'Task Manager API'
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	[pattern: '/',               access: ['permitAll']],
 	[pattern: '/error',          access: ['permitAll']],
@@ -24,6 +26,7 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 	[pattern: '/**/css/**',      filters: 'none'],
 	[pattern: '/**/images/**',   filters: 'none'],
 	[pattern: '/**/favicon.ico', filters: 'none'],
-	[pattern: '/**',             filters: 'JOINED_FILTERS']
+	[pattern: '/api/**', filters: 'JOINED_FILTERS,-exceptionTranslationFilter,-authenticationProcessingFilter,-rememberMeAuthenticationFilter'],
+	[pattern: '/**',     filters: 'JOINED_FILTERS,-basicAuthenticationFilter,-basicExceptionTranslationFilter']
 ]
 
