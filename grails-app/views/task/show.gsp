@@ -23,7 +23,9 @@
     </dl>
     <g:form action="delete" id="${task.id}" method="DELETE">
         <g:link action="edit" id="${task.id}" class="btn btn-primary">Edit</g:link>
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this task?')">Delete</button>
+        <sec:ifAnyGranted roles="ROLE_ADMIN">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this task?')">Delete</button>
+        </sec:ifAnyGranted>
         <g:link action="index" class="btn btn-secondary">Back to list</g:link>
     </g:form>
 </div>
