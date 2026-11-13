@@ -58,6 +58,7 @@ class TaskController {
         redirect action: 'show', id: task.id
     }
     
+    @Secured(['ROLE_ADMIN'])
     def delete(Long id) {
         try {
             taskService.delete(id)

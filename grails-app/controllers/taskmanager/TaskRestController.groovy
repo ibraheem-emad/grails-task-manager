@@ -53,6 +53,7 @@ class TaskRestController {
         render toMap(task) as JSON
     }
 
+    @Secured(['ROLE_ADMIN'])
     def delete(Long id) {
         try {
             taskService.delete(id)

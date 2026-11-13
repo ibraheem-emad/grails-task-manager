@@ -4,36 +4,54 @@ import grails.gorm.transactions.Transactional
 import grails.validation.ValidationException
 import java.time.LocalDate
 import java.time.ZoneId
+import grails.plugin.springsecurity.SpringSecurityService
+import grails.plugin.springsecurity.SpringSecurityUtils
 
 @Transactional
 class TaskService {
 
+    SpringSecurityService springSecurityService
+
     @Transactional(readOnly = true)
     Task get(Long id) {
-        Task.get(id)
+        Task task = Task.get(id)
+        if (task && !isAdmin() && task.assignedTo.id != currentUser().id) {
+            return null
+        }
+        task
     }
 
     @Transactional(readOnly = true)
     List<Task> list(Map params) {
-        TaskStatus status = TaskStatus.values().find { it.name() == params.status }
+    boolean admin = isAdmin()
+    User me = currentUser()
+    TaskStatus status = TaskStatus.values().find { it.name() == params.status }
 
-        Task.createCriteria().list(max: params.max, offset: params.offset) {
-            if (params.search) {
-                ilike('title', "%${params.search}%".toString())
-            }
-            if (status) {
-                eq('status', status)
-            }
-            order('deadline')
+    Task.createCriteria().list(max: params.max, offset: params.offset) {
+        if (!admin) {
+            eq('assignedTo', me)
         }
+        if (params.search) {
+            ilike('title', "%${params.search}%".toString())
+        }
+        if (status) {
+            eq('status', status)
+        }
+        order('deadline')
     }
+}
 
     @Transactional(readOnly = true)
     List<User> listUsers() {
-        User.list(sort: 'username')
+        isAdmin() ? User.list(sort: 'username') : [currentUser()]
     }
 
     Task save(Task task) {
+
+        if (!isAdmin()) {
+        task.assignedTo = currentUser()
+        }
+
         task.validate()
 
         if (task.id == null && task.deadline && task.deadline.before(startOfToday())) {
@@ -70,5 +88,13 @@ class TaskService {
 
     private static Date startOfToday() {
         Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+    }
+
+    private boolean isAdmin() {
+        SpringSecurityUtils.ifAllGranted('ROLE_ADMIN')
+    }
+
+    private User currentUser() {
+        springSecurityService.currentUser as User
     }
 }
