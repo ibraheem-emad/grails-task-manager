@@ -1,3 +1,7 @@
+<g:hasErrors bean="${task}">
+    <div class="alert alert-danger">Please fix the errors below.</div>
+</g:hasErrors>
+
 <div class="mb-3">
     <label for="title" class="form-label">Title</label>
     <g:textField name="title" value="${task?.title}"

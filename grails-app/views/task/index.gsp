@@ -7,6 +7,7 @@
 <body>
 <div class="container">
     <h1>Tasks</h1>
+    <g:render template="/flash"/>
 
     <p>
         <g:each in="${statusCounts}" var="entry">

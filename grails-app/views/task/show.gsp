@@ -7,6 +7,8 @@
 <body>
 <div class="container">
     <h1>${task.title}</h1>
+    <g:render template="/flash"/>
+    
     <dl class="row">
         <dt class="col-sm-3">Description</dt>
         <dd class="col-sm-9">${task.description ?: '-'}</dd>
