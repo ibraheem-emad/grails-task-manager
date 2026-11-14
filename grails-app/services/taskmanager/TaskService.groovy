@@ -74,17 +74,22 @@ class TaskService {
 
     @Transactional(readOnly = true)
     Map<TaskStatus, Long> countByStatus() {
+        boolean admin = isAdmin()
+        User me = currentUser()
         Map<TaskStatus, Long> counts = [:]
         TaskStatus.values().each { s ->
-            counts[s] = Task.countByStatus(s)
+            counts[s] = admin ? Task.countByStatus(s) : Task.countByStatusAndAssignedTo(s, me)
         }
         return counts
     }
 
     @Transactional(readOnly = true)
     Long countOverdue() {
-        Task.countByDeadlineLessThanAndStatusNotEqual(startOfToday(), TaskStatus.DONE)
-    }
+        if (isAdmin()) {
+            return Task.countByDeadlineLessThanAndStatusNotEqual(startOfToday(), TaskStatus.DONE)
+        }
+        Task.countByDeadlineLessThanAndStatusNotEqualAndAssignedTo(startOfToday(), TaskStatus.DONE, currentUser())
+}
 
     private static Date startOfToday() {
         Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
