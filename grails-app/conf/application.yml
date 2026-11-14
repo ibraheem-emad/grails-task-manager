@@ -62,12 +62,15 @@ environments:
             url: jdbc:mysql://localhost:3306/task_manager?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     test:
         dataSource:
-            dbCreate: update
+            driverClassName: org.h2.Driver
+            username: sa
+            password: ''
+            dbCreate: create-drop
             url: jdbc:h2:mem:testDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
     production:
         dataSource:
             dbCreate: none
-            url: jdbc:h2:./prodDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+            url: jdbc:mysql://localhost:3306/task_manager?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
             properties:
                 jmxEnabled: true
                 initialSize: 5
