@@ -17,6 +17,10 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
+    <logger name="taskmanager" level="DEBUG"/>
+    <logger name="grails" level="WARN"/>
+    <logger name="org.grails" level="WARN"/>
+
     <springProfile name="development">
         <logger name="StackTrace" level="ERROR" />
 

@@ -91,6 +91,7 @@ class TaskService {
         if (task.hasErrors()) {
             throw new ValidationException('Task is not valid', task.errors)
         }
+        log.debug "Saving task '${task.title}' (id: ${task.id})"
         task.save(failOnError: true)
     }
 
@@ -105,6 +106,7 @@ class TaskService {
         if (!task) {
             throw new IllegalArgumentException("Task ${id} not found.")
         }
+        log.info "Deleted task ${id}"
         task.delete()
     }
 
