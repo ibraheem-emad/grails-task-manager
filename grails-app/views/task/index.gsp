@@ -31,7 +31,12 @@
             <g:each in="${taskList}" var="t">
                 <tr>
                     <td><g:link action="show" id="${t.id}">${t.title}</g:link></td>
-                    <td><g:formatDate date="${t.deadline}" format="dd-MM-yyyy"/></td>
+                    <td>
+                        <g:formatDate date="${t.deadline}" format="dd-MM-yyyy"/>
+                        <g:if test="${t.deadline < java.sql.Date.valueOf(java.time.LocalDate.now()) && t.status != taskmanager.TaskStatus.DONE}">
+                            <span class="badge text-bg-danger">Overdue</span>
+                        </g:if>
+                    </td>
                     <td>${t.status.label}</td>
                     <td>${t.assignedTo.username}</td>
                 </tr>
