@@ -12,3 +12,9 @@
 *= require grails.css
 *= require_self
 */
+
+
+.page-links a,
+.page-links span {
+    margin-right: 0.5rem;
+}

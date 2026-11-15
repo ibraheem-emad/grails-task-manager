@@ -43,7 +43,9 @@
         <p>No tasks found.</p>
     </g:if>
 
-    <g:paginate total="${taskCount}" params="[search: params.search]"/>
+    <div class="page-links mt-3">
+        <g:paginate total="${taskCount}" params="[search: params.search]"/>
+    </div>
 </div>
 </body>
 </html>
